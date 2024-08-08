@@ -5,5 +5,6 @@ CREATE TABLE IF NOT EXISTS _realms (
     RealmId TEXT NOT NULL UNIQUE,
     RealmNumber INTEGER NOT NULL UNIQUE,
     RealmMinter TEXT NOT NULL,
-    RealmOwner TEXT NOT NULL
+    RealmOwner TEXT NOT NULL,
+    ProfileId TEXT
 );

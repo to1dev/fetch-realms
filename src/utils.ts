@@ -10,9 +10,12 @@ function createHeaders(): Headers {
     });
 }
 
-export async function fetchApiServer(path: string): Promise<any> {
+export async function fetchApiServer(path: string, index: number = -1): Promise<any> {
     for (let i = 0; i < apiServers.length; i++) {
-        const randomIndex = Math.floor(Math.random() * apiServers.length);
+        let randomIndex = Math.floor(Math.random() * apiServers.length);
+        if (index > -1) {
+            randomIndex = index;
+        }
         const apiUrl = `${apiServers[randomIndex]}/${path}`;
         const headers = createHeaders();
         const newRequest = new Request(apiUrl, {

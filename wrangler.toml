@@ -7,7 +7,7 @@ compatibility_date = "2024-07-12"
 # Docs: https://developers.cloudflare.com/workers/platform/triggers/cron-triggers/
 # Configuration: https://developers.cloudflare.com/workers/wrangler/configuration/#triggers
 [triggers]
-crons = ["* * * * *"] # * * * * * = run every minute
+crons = ["*/10 * * * *"] # * * * * * = run every minute
 
 # Automatically place your workloads in an optimal location to minimize latency.
 # If you are running back-end logic in a Worker, running it closer to your back-end infrastructure
@@ -45,6 +45,10 @@ crons = ["* * * * *"] # * * * * * = run every minute
 # binding = "MY_DB"
 # database_name = "my-database"
 # database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+[[d1_databases]]
+binding = "MY_DB"
+database_name = "arc20me"
+database_id = "9f6ebe9d-54e4-41b5-a401-121e5589762b"
 
 # Bind a dispatch namespace. Use Workers for Platforms to deploy serverless functions programmatically on behalf of your customers.
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#dispatch-namespace-bindings-workers-for-platforms
@@ -105,6 +109,10 @@ crons = ["* * * * *"] # * * * * * = run every minute
 # [[services]]
 # binding = "MY_SERVICE"
 # service = "my-service"
+[[services]]
+binding = "MY_SERVICE"
+service = "api-gateway"
+entrypoint = "GatewayWorker"
 
 # Bind a Vectorize index. Use to store and query vector embeddings for semantic search, classification and other vector search use-cases.
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#vectorize-indexes

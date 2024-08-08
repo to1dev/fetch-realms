@@ -64,14 +64,13 @@ async function processRealms(results: Realm[]) {
                 const pid = data.response?.result?.state?.latest?.d;
 
                 const _results = {
+                    realm,
                     id,
                     number,
                     mintAddress,
                     address,
                     pid,
                 };
-
-                console.log(_results);
             } catch (e) {
                 console.error('Failed to fetch realm profile id:', e);
                 return;

@@ -1,3 +1,4 @@
+import { Router } from 'itty-router';
 import { base64, hex } from '@scure/base';
 import * as btc from '@scure/btc-signer';
 import { fetchApiServer } from './utils';
@@ -79,6 +80,13 @@ async function processRealms(results: Realm[]) {
     }
 }
 
+const router = Router();
+
+router.get('/action/:action', async (req, env, ctx) => {
+    // to do
+    return new Response('hello world', { headers: { 'Content-Type': 'application/json' } });
+});
+
 export default {
     async scheduled(event, env, ctx): Promise<void> {
         const pageSize = 1000;
@@ -128,5 +136,9 @@ export default {
                 return;
             }
         }
+    },
+
+    async fetch(request: Request, env, ctx) {
+        return await router.handle(request, env, ctx);
     },
 } satisfies ExportedHandler<Env>;

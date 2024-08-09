@@ -84,7 +84,8 @@ const router = Router();
 
 router.get('/action/:action', async (req, env, ctx) => {
     // to do
-    return new Response('hello world', { headers: { 'Content-Type': 'application/json' } });
+    const action = req.params.action;
+    return new Response(`hello world, ${action}`, { headers: { 'Content-Type': 'application/json' } });
 });
 
 export default {
@@ -138,7 +139,12 @@ export default {
         }
     },
 
-    async fetch(request: Request, env, ctx) {
-        return await router.handle(request, env, ctx);
+    async fetch(req, env, ctx) {
+        const url = new URL(req.url);
+        if (url.pathname.startsWith('/action')) {
+            return await router.handle(req, env, ctx);
+        }
+
+        return new Response('Hello world!', { headers: { 'Content-Type': 'application/json' } });
     },
 } satisfies ExportedHandler<Env>;

@@ -80,63 +80,79 @@ async function processRealms(results: Realm[]) {
     }
 }
 
+async function getRealms(env: Env, ctx: ExecutionContext): Promise<boolean> {
+    const pageSize = 1000;
+    let page = 0;
+    let offset = 0;
+    let totalFetched = 0;
+    let moreData = true;
+    let result = false;
+
+    const endpoint = PUBLIC_ELECTRUMX_ENDPOINT1;
+
+    while (moreData) {
+        const path: string = `${endpoint}?params=["",false,${pageSize},${offset},true]`;
+
+        try {
+            const res = await fetchApiServer(path);
+            if (!res.ok) {
+                console.error(`Error fetching data: ${res.statusText}`);
+                return result;
+            }
+
+            const data = await res.json();
+            if (!data) {
+                return result;
+            }
+
+            if (!data?.success) {
+                console.error(`Error getting right json result: ${res.statusText}`);
+                return result;
+            }
+
+            const results = data.response?.result;
+            if (!results) {
+                return result;
+            }
+
+            await processRealms(results);
+
+            totalFetched += results.length;
+            if (results.length < pageSize) {
+                moreData = false;
+            } else {
+                page++;
+                offset = page * pageSize;
+            }
+        } catch (e) {
+            console.error('Failed to fetch realm:', e);
+            return result;
+        }
+    }
+
+    result = true;
+    return result;
+}
+
 const router = Router();
 
 router.get('/action/:action', async (req, env, ctx) => {
-    // to do
     const action = req.params.action;
+    if (action === 'index') {
+        const result = await getRealms(env, ctx);
+        if (result) {
+            return new Response(`${action} succeed.`, { headers: { 'Content-Type': 'application/json' } });
+        } else {
+            return new Response(`${action} failed.`, { headers: { 'Content-Type': 'application/json' } });
+        }
+    }
+
     return new Response(`hello world, ${action}`, { headers: { 'Content-Type': 'application/json' } });
 });
 
 export default {
     async scheduled(event, env, ctx): Promise<void> {
-        const pageSize = 1000;
-        let page = 0;
-        let offset = 0;
-        let totalFetched = 0;
-        let moreData = true;
-
-        const endpoint = PUBLIC_ELECTRUMX_ENDPOINT1;
-
-        while (moreData) {
-            const path: string = `${endpoint}?params=["",false,${pageSize},${offset},true]`;
-
-            try {
-                const res = await fetchApiServer(path);
-                if (!res.ok) {
-                    console.error(`Error fetching data: ${res.statusText}`);
-                    return;
-                }
-
-                const data = await res.json();
-                if (!data) {
-                    return;
-                }
-
-                if (!data?.success) {
-                    console.error(`Error getting right json result: ${res.statusText}`);
-                    return;
-                }
-
-                const results = data.response?.result;
-                if (!results) {
-                    return;
-                }
-
-                await processRealms(results);
-
-                totalFetched += results.length;
-                if (results.length < pageSize) {
-                    moreData = false;
-                } else {
-                    page++;
-                    offset = page * pageSize;
-                }
-            } catch (e) {
-                console.error('Failed to fetch realm:', e);
-                return;
-            }
-        }
+        console.log('placeholder');
     },
 
     async fetch(req, env, ctx) {

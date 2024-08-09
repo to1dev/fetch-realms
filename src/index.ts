@@ -80,13 +80,12 @@ async function processRealms(results: Realm[]) {
     }
 }
 
-async function getRealms(env: Env, ctx: ExecutionContext): Promise<boolean> {
+async function getRealms(env: Env, ctx: ExecutionContext): Promise<void> {
     const pageSize = 1000;
     let page = 0;
     let offset = 0;
     let totalFetched = 0;
     let moreData = true;
-    let result = false;
 
     const endpoint = PUBLIC_ELECTRUMX_ENDPOINT1;
 
@@ -97,22 +96,22 @@ async function getRealms(env: Env, ctx: ExecutionContext): Promise<boolean> {
             const res = await fetchApiServer(path);
             if (!res.ok) {
                 console.error(`Error fetching data: ${res.statusText}`);
-                return result;
+                return;
             }
 
             const data = await res.json();
             if (!data) {
-                return result;
+                return;
             }
 
             if (!data?.success) {
                 console.error(`Error getting right json result: ${res.statusText}`);
-                return result;
+                return;
             }
 
             const results = data.response?.result;
             if (!results) {
-                return result;
+                return;
             }
 
             await processRealms(results);
@@ -126,33 +125,36 @@ async function getRealms(env: Env, ctx: ExecutionContext): Promise<boolean> {
             }
         } catch (e) {
             console.error('Failed to fetch realm:', e);
-            return result;
+            return;
         }
     }
 
-    result = true;
-    return result;
+    return;
 }
 
 const router = Router();
 
 router.get('/action/:action', async (req, env, ctx) => {
     const action = req.params.action;
-    if (action === 'index') {
-        const result = await getRealms(env, ctx);
-        if (result) {
-            return new Response(`${action} succeed.`, { headers: { 'Content-Type': 'application/json' } });
-        } else {
-            return new Response(`${action} failed.`, { headers: { 'Content-Type': 'application/json' } });
-        }
-    }
 
     return new Response(`hello world, ${action}`, { headers: { 'Content-Type': 'application/json' } });
 });
 
 export default {
     async scheduled(event, env, ctx): Promise<void> {
-        console.log('placeholder');
+        switch (event.cron) {
+            case '*/10 * * * *':
+                await getRealms(env, ctx);
+                break;
+
+            case '*0 0 * * 1':
+                console.log('every week');
+                break;
+
+            default:
+                break;
+        }
+        console.log('cron processed');
     },
 
     async fetch(req, env, ctx) {

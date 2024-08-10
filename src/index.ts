@@ -5,6 +5,7 @@ import { fetchApiServer } from './utils';
 
 const PUBLIC_ELECTRUMX_ENDPOINT1 = 'blockchain.atomicals.find_realms';
 const PUBLIC_ELECTRUMX_ENDPOINT2 = 'blockchain.atomicals.get_state';
+const PUBLIC_ELECTRUMX_ENDPOINT3 = 'blockchain.atomicals.list';
 
 interface Realm {
     atomical_id: string;
@@ -132,6 +133,51 @@ async function getRealms(env: Env, ctx: ExecutionContext): Promise<void> {
     return;
 }
 
+async function getLatestRealms(env: Env, ctx: ExecutionContext): Promise<void> {
+    const endpoint = PUBLIC_ELECTRUMX_ENDPOINT3;
+
+    const path: string = `${endpoint}?params=[50,-1,false]`;
+
+    try {
+        const res = await fetchApiServer(path);
+        if (!res.ok) {
+            console.error(`Error fetching data: ${res.statusText}`);
+            return;
+        }
+
+        const data = await res.json();
+        if (!data) {
+            return;
+        }
+
+        if (!data?.success) {
+            console.error(`Error getting right json result: ${res.statusText}`);
+            return;
+        }
+
+        const results = data.response?.result;
+        if (!results) {
+            return;
+        }
+
+        if (Array.isArray(results) && results.length > 0) {
+            for (const result of results) {
+                const realm = result?.$full_realm_name;
+                const id = result?.atomical_id;
+                const number = result?.atomical_number;
+                const type: string = result?.type;
+                const subtype: string = result?.subtype;
+                if (type === 'NFT' && subtype.endsWith('realm')) {
+                    console.log(realm, id, number, type, subtype);
+                }
+            }
+        }
+    } catch (e) {
+        console.error('Failed to fetch latest realms:', e);
+        return;
+    }
+}
+
 const router = Router();
 
 router.get('/action/:action', async (req, env, ctx) => {
@@ -144,10 +190,11 @@ export default {
     async scheduled(event, env, ctx): Promise<void> {
         switch (event.cron) {
             case '*/10 * * * *':
-                await getRealms(env, ctx);
+                await getLatestRealms(env, ctx);
                 break;
 
             case '*0 0 * * 1':
+                //await getRealms(env, ctx);
                 console.log('every week');
                 break;
 

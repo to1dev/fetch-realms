@@ -23,6 +23,8 @@ crons = ["0 0 * * 1", "*/10 * * * *"] # * * * * * = run every minute
 # - https://developers.cloudflare.com/workers/configuration/secrets/
 # [vars]
 # MY_VARIABLE = "production_value"
+[vars]
+SERVICE_X_DATA = { DEBUG = true }
 
 # Bind the Workers AI model catalog. Run machine learning models, powered by serverless GPUs, on Cloudflare’s global network
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#workers-ai
@@ -109,10 +111,6 @@ database_id = "9f6ebe9d-54e4-41b5-a401-121e5589762b"
 # [[services]]
 # binding = "MY_SERVICE"
 # service = "my-service"
-[[services]]
-binding = "MY_SERVICE"
-service = "api-gateway"
-entrypoint = "GatewayWorker"
 
 # Bind a Vectorize index. Use to store and query vector embeddings for semantic search, classification and other vector search use-cases.
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#vectorize-indexes

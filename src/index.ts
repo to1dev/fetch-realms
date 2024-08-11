@@ -170,7 +170,7 @@ async function getRealms(env: Env, ctx: ExecutionContext): Promise<void> {
                 offset = page * pageSize;
             }
         } catch (e) {
-            console.error('Failed to fetch realm:', e);
+            console.error('Failed to fetch realms:', e);
             return;
         }
     }
@@ -243,7 +243,6 @@ export default {
                 const cachedData = await env.api.get(cacheKey, { type: 'json' });
                 if (cachedData) {
                 } else {
-                    console.log('every week');
                     await getRealms(env, ctx);
                     ctx.waitUntil(env.api.put(cacheKey, JSON.stringify({ counter: 1 })));
                 }

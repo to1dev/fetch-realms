@@ -7,7 +7,7 @@ compatibility_date = "2024-07-12"
 # Docs: https://developers.cloudflare.com/workers/platform/triggers/cron-triggers/
 # Configuration: https://developers.cloudflare.com/workers/wrangler/configuration/#triggers
 [triggers]
-crons = ["0 0 * * 1", "*/10 * * * *"] # * * * * * = run every minute
+crons = ["* * * * *", "*/10 * * * *"] # * * * * * = run every minute
 
 # Automatically place your workloads in an optimal location to minimize latency.
 # If you are running back-end logic in a Worker, running it closer to your back-end infrastructure
@@ -82,6 +82,9 @@ database_id = "9f6ebe9d-54e4-41b5-a401-121e5589762b"
 # [[kv_namespaces]]
 # binding = "MY_KV_NAMESPACE"
 # id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+[[kv_namespaces]]
+binding = "api"
+id = "4d3e6d39e8044046bb643e54e419332e"
 
 # Bind an mTLS certificate. Use to present a client certificate when communicating with another service.
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#mtls-certificates

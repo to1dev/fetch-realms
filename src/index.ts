@@ -126,7 +126,7 @@ async function processRealms(env: Env, results: RealmResult[]) {
             const id = result?.atomical_id;
             const data = await getRealm(id);
             if (data) {
-                console.log(data);
+                //console.log(data);
                 await saveToD1(env, realm, data);
             }
         }
@@ -221,7 +221,7 @@ async function getLatestRealms(env: Env, ctx: ExecutionContext): Promise<void> {
                 if (type === 'NFT' && ['realm', 'subrealm'].includes(subtype)) {
                     const data = await getRealm(id);
                     if (data) {
-                        console.log(data);
+                        //console.log(data);
                         await saveToD1(env, realm, data);
                     }
                 }

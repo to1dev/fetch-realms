@@ -109,16 +109,22 @@ async function getRealm(id: string): Promise<any | null> {
             return null;
         }
 
-        const number = data.response?.result?.atomical_number;
-        let mintAddress = scriptAddress(data.response?.result?.mint_info?.reveal_location_script);
-        let address = scriptAddress(data.response?.result?.location_info[0]?.script);
-        const pid = data.response?.result?.state?.latest?.d || null;
+        const type = data.response?.result?.type;
+        const subtype = data.response?.result?.subtype;
+        if (type === 'NFT' && ['realm', 'subrealm'].includes(subtype)) {
+            const number = data.response?.result?.atomical_number;
+            let mintAddress = scriptAddress(data.response?.result?.mint_info?.reveal_location_script);
+            let address = scriptAddress(data.response?.result?.location_info[0]?.script);
+            const pid = data.response?.result?.state?.latest?.d || null;
 
-        return { id, number, mintAddress, address, pid };
+            return { id, number, mintAddress, address, pid };
+        }
     } catch (e) {
         console.error('Failed to fetch realm:', e);
         return null;
     }
+
+    return null;
 }
 
 async function processRealms(env: Env, results: RealmResult[]) {
@@ -130,11 +136,58 @@ async function processRealms(env: Env, results: RealmResult[]) {
             const id = result?.atomical_id;
             const data = await getRealm(id);
             if (data) {
-                //console.log(data);
                 await saveToD1(env, realm, data);
             }
         }
     }
+}
+
+async function getRealmsSingle(env: Env, page: number): Promise<boolean> {
+    const pageSize = 1000;
+    let offset = 0;
+    let needMore = false;
+
+    const endpoint = PUBLIC_ELECTRUMX_ENDPOINT1;
+
+    const path: string = `${endpoint}?params=["",false,${pageSize},${offset},true]`;
+
+    try {
+        const res = await fetchApiServer(path);
+        if (!res.ok) {
+            console.error(`Error fetching data: ${res.statusText}`);
+            return needMore;
+        }
+
+        const data = await res.json();
+        if (!data) {
+            return needMore;
+        }
+
+        if (!data?.success) {
+            console.error(`Error getting right json result: ${res.statusText}`);
+            return needMore;
+        }
+
+        const results = data.response?.result;
+        if (!results) {
+            return needMore;
+        }
+
+        if (results.length > 0) {
+            await processRealms(env, results);
+
+            if (results.length < pageSize) {
+                needMore = false;
+            } else {
+                needMore = true;
+            }
+        }
+    } catch (e) {
+        console.error('Failed to fetch realms:', e);
+        return needMore;
+    }
+
+    return needMore;
 }
 
 async function getRealms(env: Env, ctx: ExecutionContext): Promise<void> {
@@ -244,26 +297,34 @@ router.get('/action/:action', async (req, env, ctx) => {
     return new Response(`hello world, ${action}`, { headers: { 'Content-Type': 'application/json' } });
 });
 
+interface CacheData {
+    counter: number;
+}
+
 export default {
     async scheduled(event, env, ctx): Promise<void> {
         switch (event.cron) {
             case '*/10 * * * *':
-                /*const cacheKey = `counter:fetch-realms`;
-                const cachedData = await env.api.get(cacheKey, { type: 'json' });
-                if (cachedData) {
-                } else {
-                    try {
-                        await getRealms(env, ctx);
-                        ctx.waitUntil(env.api.put(cacheKey, JSON.stringify({ counter: 1 })));
-                    } catch (e) {
-                        console.error('getRealms error', e);
-                    }
-                }*/
-
                 try {
                     await getLatestRealms(env, ctx);
                 } catch (e) {
                     console.error('getLatestRealms error', e);
+                }
+
+                break;
+
+            case '*/15 * * * *':
+                const cacheKey = `counter:fetch-realms`;
+                const cachedData = await env.api.get<CacheData>(cacheKey, { type: 'json' });
+                const counter = cachedData?.counter || 0;
+                try {
+                    const needMore = await getRealmsSingle(env, counter);
+                    if (needMore) {
+                        const newCounter = counter + 1;
+                        ctx.waitUntil(env.api.put(cacheKey, JSON.stringify({ newCounter })));
+                    }
+                } catch (e) {
+                    console.error('getRealms error', e);
                 }
 
                 break;

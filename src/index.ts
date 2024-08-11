@@ -43,6 +43,10 @@ function scriptAddress(hexScript: string): string | null {
     return parsedAddress;
 }
 
+async function sendQueue(env: Env, id: string, data: any): Promise<void> {
+    //await env.queue.sendQueue(id, data);
+}
+
 async function saveToD1(env: Env, realm: string, data: RealmData): Promise<boolean> {
     async function _exists(realm: string): Promise<boolean> {
         const sql = `SELECT RealmName FROM _realms WHERE RealmName = ?1 LIMIT 1`;
@@ -221,7 +225,6 @@ async function getLatestRealms(env: Env, ctx: ExecutionContext): Promise<void> {
                 if (type === 'NFT' && ['realm', 'subrealm'].includes(subtype)) {
                     const data = await getRealm(id);
                     if (data) {
-                        //console.log(data);
                         await saveToD1(env, realm, data);
                     }
                 }
@@ -244,12 +247,8 @@ router.get('/action/:action', async (req, env, ctx) => {
 export default {
     async scheduled(event, env, ctx): Promise<void> {
         switch (event.cron) {
-            case '* * * * *':
-                //await getLatestRealms(env, ctx);
-                break;
-
             case '*/10 * * * *':
-                const cacheKey = `counter:fetch-realms`;
+                /*const cacheKey = `counter:fetch-realms`;
                 const cachedData = await env.api.get(cacheKey, { type: 'json' });
                 if (cachedData) {
                 } else {
@@ -259,7 +258,14 @@ export default {
                     } catch (e) {
                         console.error('getRealms error', e);
                     }
+                }*/
+
+                try {
+                    await getLatestRealms(env, ctx);
+                } catch (e) {
+                    console.error('getLatestRealms error', e);
                 }
+
                 break;
 
             default:

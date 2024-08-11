@@ -321,8 +321,10 @@ export default {
                     const needMore = await getRealmsSingle(env, counter);
                     if (needMore) {
                         counter = counter + 1;
-                        ctx.waitUntil(env.api.put(cacheKey, JSON.stringify({ counter })));
+                    } else {
+                        counter = 0;
                     }
+                    ctx.waitUntil(env.api.put(cacheKey, JSON.stringify({ counter })));
                 } catch (e) {
                     console.error('getRealms error', e);
                 }

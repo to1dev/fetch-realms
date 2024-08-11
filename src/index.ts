@@ -143,7 +143,7 @@ async function processRealms(env: Env, results: RealmResult[]) {
 }
 
 async function getRealmsSingle(env: Env, page: number): Promise<boolean> {
-    const pageSize = 1000;
+    const pageSize = 100;
     let offset = 0;
     let needMore = false;
 

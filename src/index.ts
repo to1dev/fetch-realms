@@ -234,11 +234,11 @@ router.get('/action/:action', async (req, env, ctx) => {
 export default {
     async scheduled(event, env, ctx): Promise<void> {
         switch (event.cron) {
-            case '*/10 * * * *':
+            case '* * * * *':
                 //await getLatestRealms(env, ctx);
                 break;
 
-            case '* * * * *':
+            case '*/10 * * * *':
                 const cacheKey = `counter:fetch-realms`;
                 const cachedData = await env.api.get(cacheKey, { type: 'json' });
                 if (cachedData) {

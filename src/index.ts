@@ -253,8 +253,12 @@ export default {
                 const cachedData = await env.api.get(cacheKey, { type: 'json' });
                 if (cachedData) {
                 } else {
-                    await getRealms(env, ctx);
-                    ctx.waitUntil(env.api.put(cacheKey, JSON.stringify({ counter: 1 })));
+                    try {
+                        await getRealms(env, ctx);
+                        ctx.waitUntil(env.api.put(cacheKey, JSON.stringify({ counter: 1 })));
+                    } catch (e) {
+                        console.error('getRealms error', e);
+                    }
                 }
                 break;
 

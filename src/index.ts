@@ -316,12 +316,12 @@ export default {
             case '*/15 * * * *':
                 const cacheKey = `counter:fetch-realms`;
                 const cachedData = await env.api.get<CacheData>(cacheKey, { type: 'json' });
-                const counter = cachedData?.counter || 0;
+                let counter = cachedData?.counter || 0;
                 try {
                     const needMore = await getRealmsSingle(env, counter);
                     if (needMore) {
-                        const newCounter = counter + 1;
-                        ctx.waitUntil(env.api.put(cacheKey, JSON.stringify({ newCounter })));
+                        counter = counter + 1;
+                        ctx.waitUntil(env.api.put(cacheKey, JSON.stringify({ counter })));
                     }
                 } catch (e) {
                     console.error('getRealms error', e);

@@ -108,7 +108,7 @@ async function getRealm(id: string): Promise<any | null> {
         const number = data.response?.result?.atomical_number;
         let mintAddress = scriptAddress(data.response?.result?.mint_info?.reveal_location_script);
         let address = scriptAddress(data.response?.result?.location_info[0]?.script);
-        const pid = data.response?.result?.state?.latest?.d;
+        const pid = data.response?.result?.state?.latest?.d || null;
 
         return { id, number, mintAddress, address, pid };
     } catch (e) {
@@ -220,7 +220,10 @@ async function getLatestRealms(env: Env, ctx: ExecutionContext): Promise<void> {
                 const subtype = result?.subtype;
                 if (type === 'NFT' && ['realm', 'subrealm'].includes(subtype)) {
                     const data = await getRealm(id);
-                    await saveToD1(env, realm, data);
+                    if (data) {
+                        console.log(data);
+                        await saveToD1(env, realm, data);
+                    }
                 }
             }
         }

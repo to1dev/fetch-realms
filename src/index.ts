@@ -316,7 +316,7 @@ export default {
 
                 break;
 
-            case '*/15 * * * *':
+            case '*/5 * * * *':
                 const cacheKey = `counter:fetch-realms`;
                 const cachedData = await env.api.get<CacheData>(cacheKey, { type: 'json' });
                 let counter = cachedData?.counter || 0;

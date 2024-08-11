@@ -136,7 +136,7 @@ async function processRealms(env: Env, results: RealmResult[]) {
             const id = result?.atomical_id;
             const data = await getRealm(id);
             if (data) {
-                console.log('ready to save to D1', id);
+                //console.log('ready to save to D1', id);
                 await saveToD1(env, realm, data);
             }
         }
@@ -176,7 +176,7 @@ async function getRealmsSingle(env: Env, page: number): Promise<boolean> {
 
         const len = results.length;
         if (len > 0) {
-            console.log(len);
+            //console.log(len);
             await processRealms(env, results);
 
             if (len < pageSize) {
@@ -321,9 +321,9 @@ export default {
                 const cachedData = await env.api.get<CacheData>(cacheKey, { type: 'json' });
                 let counter = cachedData?.counter || 0;
                 try {
-                    console.log(cachedData, counter);
+                    //console.log(cachedData, counter);
                     const needMore = await getRealmsSingle(env, counter);
-                    console.log(needMore);
+                    //console.log(needMore);
                     if (needMore) {
                         counter = counter + 1;
                     } else {

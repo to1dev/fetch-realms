@@ -144,7 +144,7 @@ async function processRealms(env: Env, results: RealmResult[]) {
 
 async function getRealmsSingle(env: Env, page: number): Promise<boolean> {
     const pageSize = 100;
-    let offset = 0;
+    const offset = page * pageSize;
     let needMore = false;
 
     const endpoint = PUBLIC_ELECTRUMX_ENDPOINT1;

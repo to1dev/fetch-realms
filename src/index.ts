@@ -60,7 +60,7 @@ async function saveToD1(env: Env, realm: string, data: RealmData): Promise<boole
         )
             .bind(realm, data?.id, data?.number, data?.mintAddress, data?.address, data?.pid)
             .run();
-        console.log('insert succeed');
+        //console.log('insert succeed');
         return success;
     }
 
@@ -73,16 +73,16 @@ async function saveToD1(env: Env, realm: string, data: RealmData): Promise<boole
         )
             .bind(data?.address, data?.pid, realm)
             .run();
-        console.log('update succeed');
+        //console.log('update succeed');
         return success;
     }
 
     const exists = await _exists(realm);
     if (!exists) {
-        console.log('not exists');
+        //console.log('not exists');
         return await _save();
     } else {
-        console.log('exists');
+        //console.log('exists');
         return await _update();
     }
 

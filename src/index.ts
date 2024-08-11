@@ -321,8 +321,9 @@ export default {
                 const cachedData = await env.api.get<CacheData>(cacheKey, { type: 'json' });
                 let counter = cachedData?.counter || 0;
                 try {
+                    console.log(cachedData, counter);
                     const needMore = await getRealmsSingle(env, counter);
-                    console.log(needMore, counter);
+                    console.log(needMore);
                     if (needMore) {
                         counter = counter + 1;
                     } else {

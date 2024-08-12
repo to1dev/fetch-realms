@@ -144,7 +144,7 @@ async function processRealms(env: Env, results: RealmResult[]) {
 }
 
 async function getRealmsSingle(env: Env, page: number): Promise<boolean> {
-    const pageSize = 400;
+    const pageSize = 100;
     const offset = page * pageSize;
     let needMore = false;
 
@@ -327,9 +327,12 @@ export default {
                     //console.log(needMore);
                     if (needMore) {
                         counter = counter + 1;
-                        current = counter;
                     } else {
                         counter = 0;
+                    }
+
+                    if (counter > current) {
+                        current = counter;
                     }
                     ctx.waitUntil(env.api.put(cacheKey, JSON.stringify({ counter, current })));
                 } catch (e) {

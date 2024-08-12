@@ -302,6 +302,7 @@ router.get('/action/:action', async (req, env, ctx) => {
 
 interface CacheData {
     counter: number;
+    current: number;
 }
 
 export default {
@@ -320,7 +321,7 @@ export default {
                 const cacheKey = `counter:fetch-realms`;
                 const cachedData = await env.api.get<CacheData>(cacheKey, { type: 'json' });
                 let counter = cachedData?.counter || 0;
-                let current = counter;
+                let current = cachedData?.current || 0;
                 try {
                     //console.log(cachedData, counter);
                     const needMore = await getRealmsSingle(env, counter);

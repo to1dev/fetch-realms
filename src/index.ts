@@ -150,7 +150,7 @@ async function getRealmsSingle(env: Env, page: number): Promise<boolean> {
 
     const endpoint = PUBLIC_ELECTRUMX_ENDPOINT1;
 
-    const path: string = `${endpoint}?params=["",false,${pageSize},${offset},true]`;
+    const path: string = `${endpoint}?params=["",false,${pageSize},${offset}]`;
 
     try {
         const res = await fetchApiServer(path);
@@ -203,7 +203,7 @@ async function getRealms(env: Env, ctx: ExecutionContext): Promise<void> {
     const endpoint = PUBLIC_ELECTRUMX_ENDPOINT1;
 
     while (moreData) {
-        const path: string = `${endpoint}?params=["",false,${pageSize},${offset},true]`;
+        const path: string = `${endpoint}?params=["",false,${pageSize},${offset}]`;
 
         try {
             const res = await fetchApiServer(path);
@@ -320,16 +320,18 @@ export default {
                 const cacheKey = `counter:fetch-realms`;
                 const cachedData = await env.api.get<CacheData>(cacheKey, { type: 'json' });
                 let counter = cachedData?.counter || 0;
+                let current = counter;
                 try {
                     //console.log(cachedData, counter);
                     const needMore = await getRealmsSingle(env, counter);
                     //console.log(needMore);
                     if (needMore) {
                         counter = counter + 1;
+                        current = counter;
                     } else {
                         counter = 0;
                     }
-                    ctx.waitUntil(env.api.put(cacheKey, JSON.stringify({ counter })));
+                    ctx.waitUntil(env.api.put(cacheKey, JSON.stringify({ counter, current })));
                 } catch (e) {
                     console.error('getRealms error', e);
                 }

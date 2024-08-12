@@ -77,13 +77,17 @@ async function saveToD1(env: Env, realm: string, data: RealmData): Promise<boole
         return success;
     }
 
-    const exists = await _exists(realm);
-    if (!exists) {
-        //console.log('not exists');
-        return await _save();
-    } else {
-        //console.log('exists');
-        return await _update();
+    try {
+        const exists = await _exists(realm);
+        if (!exists) {
+            //console.log('not exists');
+            return await _save();
+        } else {
+            //console.log('exists');
+            return await _update();
+        }
+    } catch (e) {
+        console.error('error saving to D1', e);
     }
 
     return false;
@@ -131,14 +135,18 @@ async function processRealms(env: Env, results: RealmResult[]) {
     if (results.length > 0) {
         const endpoint = PUBLIC_ELECTRUMX_ENDPOINT2;
 
-        for (const result of results) {
-            const realm = result?.realm;
-            const id = result?.atomical_id;
-            const data = await getRealm(id);
-            if (data) {
-                //console.log('ready to save to D1', id);
-                await saveToD1(env, realm, data);
+        try {
+            for (const result of results) {
+                const realm = result?.realm;
+                const id = result?.atomical_id;
+                const data = await getRealm(id);
+                if (data) {
+                    //console.log('ready to save to D1', id);
+                    await saveToD1(env, realm, data);
+                }
             }
+        } catch (e) {
+            console.error('error processing realms', e);
         }
     }
 }

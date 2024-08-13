@@ -286,6 +286,7 @@ async function getLatestRealms(env: Env, ctx: ExecutionContext): Promise<void> {
                 const id = result?.atomical_id;
                 const type = result?.type;
                 const subtype = result?.subtype;
+                // request_realm request_subrealm for candidates
                 if (type === 'NFT' && ['realm', 'subrealm'].includes(subtype)) {
                     const data = await getRealm(id);
                     if (data) {

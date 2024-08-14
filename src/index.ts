@@ -151,8 +151,8 @@ async function processRealms(env: Env, results: RealmResult[]) {
     }
 }
 
-async function getRealmsSingle(env: Env, page: number): Promise<boolean> {
-    const pageSize = 100;
+async function getRealmsSingle(env: Env, page: number): Promise<boolean | null> {
+    const pageSize = 400;
     const offset = page * pageSize;
     let needMore = false;
 
@@ -164,22 +164,22 @@ async function getRealmsSingle(env: Env, page: number): Promise<boolean> {
         const res = await fetchApiServer(path);
         if (!res.ok) {
             console.error(`Error fetching data: ${res.statusText}`);
-            return needMore;
+            return null;
         }
 
         const data = await res.json();
         if (!data) {
-            return needMore;
+            return null;
         }
 
         if (!data?.success) {
             console.error(`Error getting right json result: ${res.statusText}`);
-            return needMore;
+            return null;
         }
 
         const results = data.response?.result;
         if (!results) {
-            return needMore;
+            return null;
         }
 
         const len = results.length;
@@ -195,7 +195,7 @@ async function getRealmsSingle(env: Env, page: number): Promise<boolean> {
         }
     } catch (e) {
         console.error('Failed to fetch realms:', e);
-        return needMore;
+        return null;
     }
 
     return needMore;
@@ -312,6 +312,7 @@ router.get('/action/:action', async (req, env, ctx) => {
 interface CacheData {
     counter: number;
     current: number;
+    fuckoff: number;
 }
 
 export default {
@@ -331,20 +332,25 @@ export default {
                 const cachedData = await env.api.get<CacheData>(cacheKey, { type: 'json' });
                 let counter = cachedData?.counter || 0;
                 let current = cachedData?.current || 0;
+                let fuckoff = cachedData?.fuckoff || 0;
                 try {
                     //console.log(cachedData, counter);
                     const needMore = await getRealmsSingle(env, counter);
                     //console.log(needMore);
-                    if (needMore) {
-                        counter = counter + 1;
+                    if (needMore === null) {
+                        fuckoff = fuckoff + 1;
                     } else {
-                        counter = 0;
+                        if (needMore) {
+                            counter = counter + 1;
+                        } else {
+                            counter = 0;
+                        }
                     }
 
                     if (counter > current) {
                         current = counter;
                     }
-                    ctx.waitUntil(env.api.put(cacheKey, JSON.stringify({ counter, current })));
+                    ctx.waitUntil(env.api.put(cacheKey, JSON.stringify({ counter, current, fuckoff })));
                 } catch (e) {
                     console.error('getRealms error', e);
                 }

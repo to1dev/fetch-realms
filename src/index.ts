@@ -4,7 +4,6 @@ import * as btc from '@scure/btc-signer';
 import { fetchApiServer } from './utils';
 
 const PUBLIC_ELECTRUMX_ENDPOINT1 = 'blockchain.atomicals.find_realms';
-const PUBLIC_ELECTRUMX_ENDPOINT1_2 = 'blockchain.atomicals.find_subrealms';
 const PUBLIC_ELECTRUMX_ENDPOINT2 = 'blockchain.atomicals.get_state';
 const PUBLIC_ELECTRUMX_ENDPOINT3 = 'blockchain.atomicals.list';
 
@@ -13,14 +12,6 @@ interface RealmResult {
     realm: string;
     realm_hex: string;
     status: string;
-    tx_num: number;
-}
-
-interface SubrealmResult {
-    atomical_id: string;
-    status: string;
-    subrealm: string;
-    subrealm_hex: string;
     tx_num: number;
 }
 
@@ -50,10 +41,6 @@ function scriptAddress(hexScript: string): string | null {
     const parsedAddress = addr.encode(parsedScript);
 
     return parsedAddress;
-}
-
-async function sendQueue(env: Env, id: string, data: any): Promise<void> {
-    //await env.queue.sendQueue(id, data);
 }
 
 async function saveToD1(env: Env, realm: string, data: RealmData): Promise<boolean> {

@@ -4,6 +4,7 @@ import * as btc from '@scure/btc-signer';
 import { fetchApiServer } from './utils';
 
 const PUBLIC_ELECTRUMX_ENDPOINT1 = 'blockchain.atomicals.find_realms';
+const PUBLIC_ELECTRUMX_ENDPOINT1_2 = 'blockchain.atomicals.find_subrealms';
 const PUBLIC_ELECTRUMX_ENDPOINT2 = 'blockchain.atomicals.get_state';
 const PUBLIC_ELECTRUMX_ENDPOINT3 = 'blockchain.atomicals.list';
 
@@ -12,6 +13,14 @@ interface RealmResult {
     realm: string;
     realm_hex: string;
     status: string;
+    tx_num: number;
+}
+
+interface SubrealmResult {
+    atomical_id: string;
+    status: string;
+    subrealm: string;
+    subrealm_hex: string;
     tx_num: number;
 }
 
@@ -60,7 +69,6 @@ async function saveToD1(env: Env, realm: string, data: RealmData): Promise<boole
         )
             .bind(realm, data?.id, data?.number, data?.mintAddress, data?.address, data?.pid)
             .run();
-        //console.log('insert succeed');
         return success;
     }
 
@@ -73,17 +81,14 @@ async function saveToD1(env: Env, realm: string, data: RealmData): Promise<boole
         )
             .bind(data?.address, data?.pid, realm)
             .run();
-        //console.log('update succeed');
         return success;
     }
 
     try {
         const exists = await _exists(realm);
         if (!exists) {
-            //console.log('not exists');
             return await _save();
         } else {
-            //console.log('exists');
             return await _update();
         }
     } catch (e) {
@@ -141,7 +146,6 @@ async function processRealms(env: Env, results: RealmResult[]) {
                 const id = result?.atomical_id;
                 const data = await getRealm(id);
                 if (data) {
-                    //console.log('ready to save to D1', id);
                     await saveToD1(env, realm, data);
                 }
             }
@@ -184,7 +188,6 @@ async function getRealmsSingle(env: Env, page: number): Promise<boolean | null> 
 
         const len = results.length;
         if (len > 0) {
-            //console.log(len);
             await processRealms(env, results);
 
             if (len < pageSize) {
@@ -312,6 +315,8 @@ router.get('/action/:action', async (req, env, ctx) => {
 interface CacheData {
     counter: number;
     current: number;
+    currentParent: string;
+    subrealmCounter: number;
     fuckoff: number;
 }
 
@@ -334,9 +339,7 @@ export default {
                 let current = cachedData?.current || 0;
                 let fuckoff = cachedData?.fuckoff || 0;
                 try {
-                    //console.log(cachedData, counter);
                     const needMore = await getRealmsSingle(env, counter);
-                    //console.log(needMore);
                     if (needMore === null) {
                         fuckoff = fuckoff + 1;
                     } else {

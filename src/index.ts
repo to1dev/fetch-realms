@@ -46,14 +46,14 @@ function scriptAddress(hexScript: string): string | null {
 
 async function saveToD1(env: Env, realm: string, data: RealmData): Promise<boolean> {
     async function _exists(realm: string): Promise<boolean> {
-        const sql = `SELECT RealmName FROM _realms WHERE RealmName = ?1 LIMIT 1`;
+        const sql = `SELECT RealmName FROM _realms2 WHERE RealmName = ?1 LIMIT 1`;
         const _realm = await env.MY_DB.prepare(sql).bind(realm).first();
         return _realm !== null;
     }
 
     async function _save(): Promise<boolean> {
         const { success } = await env.MY_DB.prepare(
-            `insert into _realms (RealmName, RealmId, RealmNumber, RealmMintTime, RealmMinter, RealmOwner, ProfileId) values (?1, ?2, ?3, ?4, ?5, ?6, ?7)`
+            `insert into _realms2 (RealmName, RealmId, RealmNumber, RealmMintTime, RealmMinter, RealmOwner, ProfileId) values (?1, ?2, ?3, ?4, ?5, ?6, ?7)`
         )
             .bind(realm, data?.id, data?.number, data?.mintTime, data?.mintAddress, data?.address, data?.pid)
             .run();
@@ -62,7 +62,7 @@ async function saveToD1(env: Env, realm: string, data: RealmData): Promise<boole
 
     async function _update(): Promise<boolean> {
         const { success } = await env.MY_DB.prepare(
-            `update _realms set
+            `update _realms2 set
                 RealmOwner = ?1,
                 ProfileId = ?2
              where RealmName = ?3`

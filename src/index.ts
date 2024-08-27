@@ -18,6 +18,7 @@ interface RealmResult {
 interface RealmData {
     id: string;
     number: number;
+    mintTime: number;
     mintAddress: string;
     address: string;
     pid: string;
@@ -52,9 +53,9 @@ async function saveToD1(env: Env, realm: string, data: RealmData): Promise<boole
 
     async function _save(): Promise<boolean> {
         const { success } = await env.MY_DB.prepare(
-            `insert into _realms (RealmName, RealmId, RealmNumber, RealmMinter, RealmOwner, ProfileId) values (?1, ?2, ?3, ?4, ?5, ?6)`
+            `insert into _realms (RealmName, RealmId, RealmNumber, RealmMintTime, RealmMinter, RealmOwner, ProfileId) values (?1, ?2, ?3, ?4, ?5, ?6, ?7)`
         )
-            .bind(realm, data?.id, data?.number, data?.mintAddress, data?.address, data?.pid)
+            .bind(realm, data?.id, data?.number, data?.mintTime, data?.mintAddress, data?.address, data?.pid)
             .run();
         return success;
     }
@@ -109,11 +110,12 @@ async function getRealm(id: string): Promise<any | null> {
         const subtype = data.response?.result?.subtype;
         if (type === 'NFT' && ['realm', 'subrealm'].includes(subtype)) {
             const number = data.response?.result?.atomical_number;
+            const mintTime = data.response?.result?.mint_data?.fields?.args?.time;
             let mintAddress = scriptAddress(data.response?.result?.mint_info?.reveal_location_script);
             let address = scriptAddress(data.response?.result?.location_info[0]?.script);
             const pid = data.response?.result?.state?.latest?.d || null;
 
-            return { id, number, mintAddress, address, pid };
+            return { id, number, mintTime, mintAddress, address, pid };
         }
     } catch (e) {
         console.error('Failed to fetch realm:', e);
@@ -320,7 +322,7 @@ export default {
                 break;
 
             case '*/5 * * * *':
-                const cacheKey = `counter:fetch-realms`;
+                const cacheKey = `counter2:fetch-realms`;
                 const cachedData = await env.api.get<CacheData>(cacheKey, { type: 'json' });
                 let counter = cachedData?.counter || 0;
                 let current = cachedData?.current || 0;
